@@ -571,7 +571,7 @@ std::string Tools::webSearch(std::string& query, bool summary, std::optional<std
         requestBody["query"] = query;
         requestBody["freshness"] = "noLimit";
         requestBody["summary"] = false;  // 不要求服务端摘要，自己提取
-        requestBody["count"] = 8;
+        requestBody["count"] = 5;        // 减少条数，降低上下文压力
         if (Include.has_value()) {
             requestBody["include"] = Include.value();
         }
@@ -634,6 +634,11 @@ std::string Tools::webSearch(std::string& query, bool summary, std::optional<std
                 std::string title = item.value("name", item.value("title", ""));
                 std::string snippet = item.value("snippet", item.value("summary", ""));
                 std::string url = item.value("url", "");
+
+                // 截断过长摘要，减少上下文压力
+                if (snippet.size() > 150) {
+                    snippet = snippet.substr(0, 147) + "...";
+                }
 
                 result += std::to_string(count) + ". " + title + "\n";
                 if (!snippet.empty()) result += "   " + snippet + "\n";

@@ -587,7 +587,10 @@ json agent::msgSizeCheck(json& msgs, int total_token) {
 json agent::GetContent(const json& response, json& messages) {
 	// 检查错误
 	if (response.contains("error")) {
-		std::cerr << CLR_RED "[✗] API: " << response["error"]["message"] << CLR_RESET << std::endl;
+		std::string errMsg = response["error"].is_object()
+			? response["error"].value("message", response["error"].dump())
+			: response["error"].dump();
+		std::cerr << CLR_RED "[✗] API: " << errMsg << CLR_RESET << std::endl;
 		return json::object();
 	}
 

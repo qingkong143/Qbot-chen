@@ -8,6 +8,27 @@ ReplyOptimizer& ReplyOptimizer::get() {
     return instance;
 }
 
+// 计算 UTF-8 字符串的字符数（非字节数）
+static int utf8CharLen(const std::string& str) {
+    int len = 0;
+    for (size_t i = 0; i < str.size();) {
+        unsigned char c = static_cast<unsigned char>(str[i]);
+        if (c < 0x80) {
+            i += 1;
+        } else if ((c & 0xE0) == 0xC0) {
+            i += 2;
+        } else if ((c & 0xF0) == 0xE0) {
+            i += 3;
+        } else if ((c & 0xF8) == 0xF0) {
+            i += 4;
+        } else {
+            i += 1;
+        }
+        len++;
+    }
+    return len;
+}
+
 std::vector<std::string> ReplyOptimizer::splitSentences(const std::string& text) const {
     std::vector<std::string> sentences;
     std::string current;
@@ -39,7 +60,7 @@ double ReplyOptimizer::sentenceRelevance(const std::string& sentence, const std:
 }
 
 std::string ReplyOptimizer::optimizeLength(const std::string& reply, const std::string& groupStyle, int maxLength) {
-    if ((int)reply.length() <= maxLength) {
+    if (utf8CharLen(reply) <= maxLength) {
         return reply;
     }
 
@@ -48,16 +69,28 @@ std::string ReplyOptimizer::optimizeLength(const std::string& reply, const std::
     std::string result;
 
     for (const auto& sentence : sentences) {
-        if ((int)(result.length() + sentence.length()) <= maxLength) {
+        if (utf8CharLen(result) + utf8CharLen(sentence) <= maxLength) {
             result += sentence;
         } else {
             break;
         }
     }
 
-    // 如果完全被截断，至少保留一句
+    // 如果完全被截断，至少保留一句（按字符截断，非字节）
     if (result.empty() && !sentences.empty()) {
-        result = sentences[0].substr(0, maxLength);
+        int charCount = 0;
+        size_t bytePos = 0;
+        for (size_t i = 0; i < sentences[0].size() && charCount < maxLength;) {
+            unsigned char c = static_cast<unsigned char>(sentences[0][i]);
+            if (c < 0x80) { i += 1; }
+            else if ((c & 0xE0) == 0xC0) { i += 2; }
+            else if ((c & 0xF0) == 0xE0) { i += 3; }
+            else if ((c & 0xF8) == 0xF0) { i += 4; }
+            else { i += 1; }
+            bytePos = i;
+            charCount++;
+        }
+        result = sentences[0].substr(0, bytePos);
     }
 
     return result;

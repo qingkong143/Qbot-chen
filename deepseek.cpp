@@ -26,6 +26,9 @@ json Deepseek::SendChatCompletion(CURL* curl, const json& messages, const json& 
     };
     std::string bodyString = requestBody.dump();
 
+    // 调试：打印 max_tokens 实际值
+    std::cout << "[DEBUG] max_tokens=" << m.max_tokens << ", model=" << m.model << std::endl;
+
     curl_easy_setopt(curl, CURLOPT_URL, m.url.c_str());
     struct curl_slist* headers = nullptr;
     headers = curl_slist_append(headers, "Content-Type: application/json");
