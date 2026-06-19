@@ -1,0 +1,38 @@
+# 编译产物
+build/
+cmake-build-*/
+out/
+bin/
+obj/
+.claude/
+.codegraph/
+*.o
+*.obj
+*.exe
+*.a
+*.so
+*.dll
+*.lib
+*.pdb
+
+# IDE 缓存
+.vscode/
+.idea/
+*.vsidx
+*.sln
+*.vcxproj
+*.suo
+*.cache
+
+# 日志、临时文件
+*.log
+*.tmp
+*.bak
+*.swp
+.DS_Store
+Thumbs.db
+
+# 环境配置、密钥
+.env
+config.json
+secret.key
