@@ -3,6 +3,8 @@ project(dicksuck LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(IX_WEBSOCKET_BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)  # 不编译测试
+set(IX_WEBSOCKET_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)     # 不编译示例
 
 # ── 依赖查找 ──────────────────────────────
 find_package(CURL REQUIRED)
@@ -10,17 +12,20 @@ find_package(nlohmann_json REQUIRED)
 find_package(Threads REQUIRED)
 find_package(SQLite3 REQUIRED)
 
-# ixwebsocket：优先 CMake 模块，回退 pkg-config
+# ixwebsocket：系统包优先，回退 FetchContent 自动下载编译
 find_package(ixwebsocket QUIET)
 if(NOT ixwebsocket_FOUND)
-    find_package(PkgConfig QUIET)
-    if(PkgConfig_FOUND)
-        pkg_check_modules(IXWEBSOCKET IMPORTED_TARGET ixwebsocket)
-        if(IXWEBSOCKET_FOUND)
-            set(ixwebsocket_FOUND TRUE)
-        endif()
-    endif()
+    include(FetchContent)
+    FetchContent_Declare(
+        ixwebsocket
+        GIT_REPOSITORY https://github.com/machinezone/IXWebSocket.git
+        GIT_TAG        master
+        GIT_SHALLOW    TRUE
+    )
+    FetchContent_MakeAvailable(ixwebsocket)
 endif()
+
+find_package(ixwebsocket REQUIRED)
 
 # ── 共享链接依赖（INTERFACE 库，同时供主程序和测试链接） ──
 add_library(dicksuck_deps INTERFACE)
@@ -33,11 +38,7 @@ target_link_libraries(dicksuck_deps INTERFACE
 if(ixwebsocket_FOUND)
     target_link_libraries(dicksuck_deps INTERFACE ixwebsocket::ixwebsocket)
 else()
-    message(WARNING "ixwebsocket not found via CMake/pkg-config. "
-        "请手动指定: -DIXWEBSOCKET_INCLUDE_DIR=... -DIXWEBSOCKET_LIB=...")
-    # 取消下面注释并填写实际路径：
-    # target_include_directories(dicksuck PRIVATE /usr/local/include)
-    # target_link_libraries(dicksuck PRIVATE /usr/local/lib/libixwebsocket.a)
+    message(FATAL_ERROR "ixwebsocket: FetchContent 下载失败")
 endif()
 
 # ── 共享代码（OBJECT 库，同时供主程序和测试链接） ──

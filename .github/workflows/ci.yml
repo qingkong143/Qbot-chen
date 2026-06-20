@@ -1,0 +1,55 @@
+name: Build & Test (Linux)
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+        build_type: [Debug, Release]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            cmake \
+            ninja-build \
+            pkg-config \
+            libcurl4-openssl-dev \
+            nlohmann-json3-dev \
+            libsqlite3-dev \
+            clang-tidy
+
+      - name: Configure (CMake)
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_C_COMPILER=${{ matrix.compiler }} \
+            -DCMAKE_CXX_COMPILER=${{ matrix.compiler == 'gcc' && 'g++' || 'clang++' }} \
+            -DBUILD_TESTING=ON
+
+      - name: Build
+        run: cmake --build build --config ${{ matrix.build_type }} -j$(nproc)
+
+      - name: Run unit tests
+        if: matrix.build_type == 'Debug'
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Upload build artifacts (Release)
+        if: matrix.build_type == 'Release' && matrix.compiler == 'gcc'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dicksuck-linux-gcc-${{ github.sha }}
+          path: build/dicksuck
+          retention-days: 14
