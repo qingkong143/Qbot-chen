@@ -8,6 +8,8 @@
       - name: "qbot-chen"
         stages:
           # 使用流水线输出你的构建配置数据
+          - name: env
+            script: apt update -y && apt install -y build-essential cmake libcurl4-openssl-dev nlohmann-json3-dev libsqlite3-dev libixwebsocket-dev
           - name: build
             script: sh build.sh
   
