@@ -1,6 +1,24 @@
 #!/bin/bash
 
-# dicksuck Linux 构建脚本
+# Linux 构建脚本
+
+# 替换国内debian源加速
+sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
+sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
+
+# 第一步：安装系统原生依赖（去掉libixwebsocket-dev）
+apt update -y
+apt install -y build-essential cmake libcurl4-openssl-dev nlohmann-json3-dev libsqlite3-dev git
+
+# 第二步：源码编译安装 ixWebSocket
+git clone https://github.com/machinezone/IXWebSocket.git /tmp/ixws
+cd /tmp/ixws
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j$(nproc)
+cmake --install build
+
+# 切回项目目录继续编译你的程序
+cd /app
 
 set -e
 
@@ -8,7 +26,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="$SCRIPT_DIR/build"
 INSTALL_PREFIX="/usr/local"
 
-echo "🔨 dicksuck Linux Build Script"
+echo "🔨 qbot-chen Linux Build Script"
 echo "================================"
 
 # 检查依赖
