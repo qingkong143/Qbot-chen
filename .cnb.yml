@@ -1,14 +1,6 @@
-# 这里是一个示例 .cnb.yml
-  
-  # 匹配master分支
-  master:
-    # 触发事件为 push 事件
-    push:
-      # 这里是阶段任务示例，可配置任意多个阶段，这里以一个阶段为例
-      - name: "qbot-chen"
-        stages:
-          # 使用流水线输出你的构建配置数据
-          - name: build
-            script: sh build.sh
-  
-  # 更多资料见 https://docs.cnb.cool/build/quick-start.html
+master:
+  push:
+    - name: "qbot-chen"
+      stages:
+        - name: build
+          script: sh .cnb/build.sh

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(dicksuck LANGUAGES CXX)
+project(qbot_chen LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -23,8 +23,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(ixwebsocket)
 
 # ── 共享链接依赖（INTERFACE 库，同时供主程序和测试链接） ──
-add_library(dicksuck_deps INTERFACE)
-target_link_libraries(dicksuck_deps INTERFACE
+add_library(qbot_chen_deps INTERFACE)
+target_link_libraries(qbot_chen_deps INTERFACE
     CURL::libcurl
     nlohmann_json::nlohmann_json
     Threads::Threads
@@ -33,7 +33,7 @@ target_link_libraries(dicksuck_deps INTERFACE
 )
 
 # ── 共享代码（OBJECT 库，同时供主程序和测试链接） ──
-add_library(dicksuck_obj OBJECT
+add_library(qbot_chen_obj OBJECT
     agent.cpp
     jargon_miner.cpp
     cleanup_manager.cpp
@@ -80,31 +80,32 @@ add_library(dicksuck_obj OBJECT
     main_system.cpp
 )
 
-target_include_directories(dicksuck_obj PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(dicksuck_obj PUBLIC dicksuck_deps)
+target_include_directories(qbot_chen_obj PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(qbot_chen_obj PUBLIC qbot_chen_deps)
 
 # ── 生产可执行文件 ─────────────────────────
-add_executable(dicksuck
-    $<TARGET_OBJECTS:dicksuck_obj>
+add_executable(qbot_chen
+    $<TARGET_OBJECTS:qbot_chen_obj>
     main.cpp
 )
-target_link_libraries(dicksuck PRIVATE dicksuck_deps)
+set_target_properties(qbot_chen PROPERTIES OUTPUT_NAME "qbot-chen")
+target_link_libraries(qbot_chen PRIVATE qbot_chen_deps)
 
 # ── 测试 ──────────────────────────────────
 enable_testing()
-add_executable(dicksuck_test
-    $<TARGET_OBJECTS:dicksuck_obj>
+add_executable(qbot_chen_test
+    $<TARGET_OBJECTS:qbot_chen_obj>
     test_cases.cpp
 )
-target_link_libraries(dicksuck_test PRIVATE dicksuck_deps)
-add_test(NAME dicksuck_unit_tests COMMAND dicksuck_test)
+target_link_libraries(qbot_chen_test PRIVATE qbot_chen_deps)
+add_test(NAME qbot_chen_unit_tests COMMAND qbot_chen_test)
 
 # ── 编译选项 ──────────────────────────────
-target_compile_options(dicksuck_obj PRIVATE
+target_compile_options(qbot_chen_obj PRIVATE
     $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra -O2>
     $<$<CXX_COMPILER_ID:MSVC>:/W4 /O2 /utf-8>
 )
-target_compile_definitions(dicksuck_obj PRIVATE
+target_compile_definitions(qbot_chen_obj PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:NOMINMAX>
     $<$<CXX_COMPILER_ID:MSVC>:WIN32_LEAN_AND_MEAN>
     $<$<CXX_COMPILER_ID:MSVC>:_CRT_DECLARE_NONSTDC_NAMES=1>
