@@ -5,7 +5,11 @@
 #include <curl/curl.h>
 
 int main() {
-    curl_global_init(CURL_GLOBAL_ALL);
+    CURLcode globalRes = curl_global_init(CURL_GLOBAL_ALL);
+    if (globalRes != CURLE_OK) {
+        std::cerr << CLR_RED "[✗] curl_global_init failed: " << curl_easy_strerror(globalRes) << CLR_RESET << std::endl;
+        return 1;
+    }
     Config::get().load("config.json");   // 启动时加载配置，失败则使用内置默认值
     /*SetConsoleCP(CP_UTF8);
     SetConsoleOutputCP(CP_UTF8);*/
@@ -23,12 +27,20 @@ int main() {
     std::getline(std::cin, choice);
 
     if (choice == "2") {
-        Napcat napcat;
-        napcat.run();
+        try {
+            Napcat napcat;
+            napcat.run();
+        } catch (const std::exception& e) {
+            std::cerr << CLR_RED "[✗] 致命错误: " << e.what() << CLR_RESET << std::endl;
+        }
     } else {
-        agent* p = new agent;
-        p->run();
-        delete p;
+        try {
+            agent* p = new agent;
+            p->run();
+            delete p;
+        } catch (const std::exception& e) {
+            std::cerr << CLR_RED "[✗] 致命错误: " << e.what() << CLR_RESET << std::endl;
+        }
     }
 
 #ifdef _WIN32

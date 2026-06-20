@@ -50,38 +50,9 @@ json Deepseek::SendChatCompletion(CURL* curl, const json& messages, const json& 
     }
 
     try {
-        // 先清理可能的非法 UTF-8 字节，再解析 JSON
-        std::string safeBody;
-        safeBody.reserve(responseBody.size());
-        for (size_t i = 0; i < responseBody.size(); i++) {
-            unsigned char c = static_cast<unsigned char>(responseBody[i]);
-            if (c < 0x80) {
-                safeBody += responseBody[i];
-            } else if ((c & 0xE0) == 0xC0) {
-                if (i + 1 < responseBody.size() && (responseBody[i+1] & 0xC0) == 0x80) {
-                    safeBody.append(responseBody, i, 2);
-                    i += 1;
-                }
-            } else if ((c & 0xF0) == 0xE0) {
-                if (i + 2 < responseBody.size()
-                    && (responseBody[i+1] & 0xC0) == 0x80
-                    && (responseBody[i+2] & 0xC0) == 0x80) {
-                    safeBody.append(responseBody, i, 3);
-                    i += 2;
-                }
-            } else if ((c & 0xF8) == 0xF0) {
-                if (i + 3 < responseBody.size()
-                    && (responseBody[i+1] & 0xC0) == 0x80
-                    && (responseBody[i+2] & 0xC0) == 0x80
-                    && (responseBody[i+3] & 0xC0) == 0x80) {
-                    safeBody.append(responseBody, i, 4);
-                    i += 3;
-                }
-            }
-            // 跳过无效字节（不追加）
-        }
-
-        json response = json::parse(safeBody, nullptr, false);
+        // API 返回的 JSON 始终是合法 UTF-8，直接解析即可
+        const std::string& parseBody = responseBody;
+        json response = json::parse(parseBody, nullptr, false);
         if (response.is_null() || response.is_discarded()) {
             std::cerr << CLR_RED "[✗] JSON parse failed, body size: "
                 << responseBody.size() << CLR_RESET << std::endl;
@@ -97,7 +68,7 @@ json Deepseek::SendChatCompletion(CURL* curl, const json& messages, const json& 
         }
         if (http_code < 200 || http_code >= 300) {
             std::cerr << CLR_RED "[✗] HTTP " << http_code << ": "
-                << safeBody.substr(0, 200) << CLR_RESET << std::endl;
+                << responseBody.substr(0, 200) << CLR_RESET << std::endl;
             return json::object();
         }
         return response;

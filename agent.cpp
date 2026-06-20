@@ -119,8 +119,10 @@ json agent::getAvailableTools() const {
 void agent::init() {
 	curl = curl_easy_init();
 	if (!curl) {
-		std::cerr << CLR_RED "[✗] curl 初始化失败" CLR_RESET << std::endl;
-		return;
+		throw std::runtime_error(
+			std::string("curl_easy_init failed after curl_global_init — ")
+			+ "libcurl version: " + curl_version_info(CURLVERSION_NOW)->version
+		);
 	}
 	messages = json::array();
 	json message;
@@ -453,12 +455,6 @@ std::string agent::processQuery(const std::string& api_user_content,
 void agent::run()
 {
 	init();
-	if (!curl) {
-#ifdef _WIN32
-		system("pause");
-#endif
-		return;
-	}
 
 	initDisplay();
 
