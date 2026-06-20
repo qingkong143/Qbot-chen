@@ -1,7 +1,6 @@
 #include "reply_optimizer.h"
 #include <algorithm>
 #include <regex>
-#include <iostream>
 
 ReplyOptimizer& ReplyOptimizer::get() {
     static ReplyOptimizer instance;
@@ -33,9 +32,10 @@ std::vector<std::string> ReplyOptimizer::splitSentences(const std::string& text)
     std::vector<std::string> sentences;
     std::string current;
 
-    for (char c : text) {
-        current += c;
-        if (c == '。' || c == ',' || c == '，' || c == '！' || c == '？') {
+    for (unsigned char c : text) {
+        current += static_cast<char>(c);
+        if (current.ends_with("。") || current.ends_with("！") || current.ends_with("？")
+            || current.ends_with("，") || current.ends_with(",")) {
             if (!current.empty()) {
                 sentences.push_back(current);
                 current.clear();
@@ -50,7 +50,7 @@ std::vector<std::string> ReplyOptimizer::splitSentences(const std::string& text)
     return sentences;
 }
 
-double ReplyOptimizer::sentenceRelevance(const std::string& sentence, const std::string& userMessage) const {
+double ReplyOptimizer::sentenceRelevance([[maybe_unused]] const std::string& sentence, [[maybe_unused]] const std::string& userMessage) const {
     // 简单相关性计算：共同词汇数量 / 总词汇数
     int commonWords = 0;
     int totalWords = sentence.length() / 2;  // 粗略估计
@@ -59,7 +59,7 @@ double ReplyOptimizer::sentenceRelevance(const std::string& sentence, const std:
     return commonWords > 0 ? (double)commonWords / totalWords : 0.5;
 }
 
-std::string ReplyOptimizer::optimizeLength(const std::string& reply, const std::string& groupStyle, int maxLength) {
+std::string ReplyOptimizer::optimizeLength(const std::string& reply, [[maybe_unused]] const std::string& groupStyle, int maxLength) {
     if (utf8CharLen(reply) <= maxLength) {
         return reply;
     }
