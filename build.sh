@@ -2,15 +2,15 @@
 set -eo pipefail
 
 # ====================== 环境自动判断 ======================
-# CNB云构建环境会内置环境变量 RUNNER_NAME，以此区分
-if [ -n "$RUNNER_NAME" ]; then
-    # 云构建模式
+# CNB构建容器固定存在 /output 目录，以此区分云端/本地
+if [ -d "/output" ]; then
+    # 云端构建：root，无sudo
     IS_CNB_BUILD=1
     OUTPUT_DIR="/output"
 else
-    # 本地开发模式
+    # 本地开发：普通用户，需要sudo
     IS_CNB_BUILD=0
-    OUTPUT_DIR="./dist" # 本地输出到项目内dist文件夹
+    OUTPUT_DIR="./dist"
 fi
 
 # 全局固定配置
@@ -80,7 +80,7 @@ if [ -f "$IXWS_INSTALL_MARK" ]; then
     echo "✓ IXWebSocket 已预编译安装，跳过源码构建"
 else
     echo "IXWebSocket 未安装，源码编译中..."
-    git clone https://mirror.ghproxy.com/https://github.com/machinezone/IXWebSocket.git /tmp/ixws
+    git clone https://github.com/machinezone/IXWebSocket.git /tmp/ixws
     cd /tmp/ixws
     cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
     cmake --build build -j$(nproc)
