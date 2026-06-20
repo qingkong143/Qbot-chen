@@ -2,14 +2,13 @@
 set -eo pipefail
 
 # ====================== 环境自动判断 ======================
-# CNB构建容器固定存在 /output 目录，以此区分云端/本地
-if [ -d "/output" ]; then
+# 环境判断,需要用户自行修改-> 1为cnb构建,0为本地构建
+IS_CNB_BUILD=1
+if [ $IS_CNB_BUILD -eq 1 ]; then
     # 云端构建：root，无sudo
-    IS_CNB_BUILD=1
     OUTPUT_DIR="/output"
 else
     # 本地开发：普通用户，需要sudo
-    IS_CNB_BUILD=0
     OUTPUT_DIR="./dist"
 fi
 
