@@ -146,6 +146,8 @@
 mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 make -j$(nproc)
+# 或者直接
+sh build.sh
 
 # Windows (Visual Studio  Developer Command Prompt)
 mkdir build && cd build
@@ -167,7 +169,7 @@ cmake --build . --config Release
     "summary_model": {
         "url": "https://api.deepseek.com/chat/completions",
         "api_key": "sk-xxx",
-        "model": "deepseek-chat"
+        "model": "deepseek-v4-flash"
     },
     "search": {
         "url": "https://api.bocha.cn/v1/web-search",
@@ -189,7 +191,7 @@ cmake --build . --config Release
 
 ```bash
 # 启动后选择模式
-./dicksuck
+./qbot-chen
 # [1] Agent 模式（控制台对话）
 # [2] NapCat 模式（QQ 机器人）
 ```
@@ -227,7 +229,7 @@ cmake --build . --config Release
 ## 目录结构
 
 ```
-dicksuck_linux/
+qbot-chen/
 ├── main.cpp                  # 入口，模式选择
 ├── config.cpp/.h             # 配置加载 & 必填校验
 ├── napcat_bot.cpp/.h         # QQ 机器人主循环
