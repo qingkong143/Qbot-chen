@@ -163,8 +163,4 @@ private:
 	// 冷却与空闲补偿
 	bool shouldUseIdleCompensation(const std::string& sessionKey, int idleSeconds) const;
 	void recordAiReplyTime(const std::string& sessionKey);
-
-	// 将文本按长度拆分发送（QQ 消息有长度限制）
-	void sendLongMessage(int64_t group_id, int64_t user_id,
-		const std::string& msgType, const std::string& text);
 };

@@ -222,3 +222,7 @@ TestSuite& TestSuite::get() {
     static TestSuite instance;
     return instance;
 }
+
+int main() {
+    return TestSuite::get().runAll();
+}

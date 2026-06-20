@@ -586,53 +586,6 @@ void Napcat::quickSetRemark(const json& context, const std::string& remark) {
 	handleQuickOperation(context, {{"remark", remark}});
 }
 
-// 长消息拆分发送（QQ 单条消息有长度限制）
-void Napcat::sendLongMessage(int64_t group_id, int64_t user_id,
-	const std::string& msgType, const std::string& text) {
-	const size_t MAX_LEN = 2000;
-
-	if (text.size() <= MAX_LEN) {
-		if (msgType == "group") sendGroupMsg(group_id, text);
-		else sendPrivateMsg(user_id, text);
-		return;
-	}
-
-	size_t pos = 0;
-	int part = 1;
-	while (pos < text.size()) {
-		size_t end = pos + MAX_LEN;
-		if (end >= text.size()) {
-			end = text.size();
-		} else {
-			// 1. 确保不在 UTF-8 多字节字符中间切断
-			while (end > pos && (text[end] & 0xC0) == 0x80) end--;
-			// 2. 回退到最近的换行符（优先），其次是空格
-			size_t split = end;
-			while (split > pos && text[split] != '\n') split--;
-			if (split > pos) {
-				end = split;  // 找到换行，在此处断开
-			} else {
-				// 没找到换行，回退到空格
-				split = end;
-				while (split > pos && text[split] != ' ') split--;
-				if (split > pos) end = split + 1;  // 保留空格在上一段末尾
-			}
-			// 兜底：实在找不到分割点就硬断（已确保 UTF-8 安全）
-			if (end <= pos) end = pos + MAX_LEN;
-		}
-
-		std::string chunk = text.substr(pos, end - pos);
-		std::string label = "[" + std::to_string(part) + "] " + chunk;
-		part++;
-
-		if (msgType == "group") sendGroupMsg(group_id, label);
-		else sendPrivateMsg(user_id, label);
-
-		pos = end;
-		while (pos < text.size() && (text[pos] == '\n' || text[pos] == ' ')) pos++;
-	}
-}
-
 // 检测消息是否 @了机器人（通过 CQ 码匹配）
 bool Napcat::isAtBot(const std::string& raw_message) const {
 	if (_selfId.empty()) return false;
@@ -1222,29 +1175,32 @@ void Napcat::registerBotTools(Tools& t) {
 			return "正在从 NapCat 拉取群聊 " + std::to_string(gid) + " 的历史消息，稍后上下文会自动更新。";
 		});
 
-	// recognize_image — 由 agent 决定是否识别当前消息中的图片
-	t.registerTool("recognize_image", {
-		{"type", "function"},
-		{"function", {
-			{"name", "recognize_image"},
-			{"description", "识别当前消息中的图片。仅当当前消息包含图片且需要 OCR 时调用。"},
-			{"parameters", {
-				{"type", "object"},
-				{"properties", {
-					{"max_images", { {"type", "integer"}, {"description", "最多识别的图片数量，默认2"} }}
-				}},
-				{"required", json::array()}
-			}}
-		}}
-		}, [this](const json& args) -> std::string {
-			int maxImages = args.value("max_images", 2);
-			if (maxImages <= 0) maxImages = 2;
-			if (maxImages > 5) maxImages = 5;
-			std::string raw = g_currentMessageContext.value("raw_message", "");
-			auto urls = ImageOcrService::get().extractImageUrls(raw, maxImages);
-			if (urls.empty()) return "当前消息中未找到可识别的图片";
-			return ImageOcrService::get().recognizeImages(urls);
-		});
+		// recognize_image — 由 agent 决定是否识别当前消息中的图片（仅 OCR 启用时注册）
+		if (Config::get().ocr().enabled) {
+			t.registerTool("recognize_image", {
+				{"type", "function"},
+				{"function", {
+					{"name", "recognize_image"},
+					{"description", "识别当前消息中的图片。仅当当前消息包含图片且需要 OCR 时调用。"},
+					{"parameters", {
+						{"type", "object"},
+						{"properties", {
+							{"max_images", { {"type", "integer"}, {"description", "最多识别的图片数量，默认2"} }}
+						}},
+						{"required", json::array()}
+					}}
+				}}
+				}, [this](const json& args) -> std::string {
+					int maxImages = args.value("max_images", 2);
+					if (maxImages <= 0) maxImages = 2;
+					if (maxImages > 5) maxImages = 5;
+					std::string raw = g_currentMessageContext.value("raw_message", "");
+					auto urls = ImageOcrService::get().extractImageUrls(raw, maxImages);
+					if (urls.empty()) return "当前消息中未找到可识别的图片";
+					return ImageOcrService::get().recognizeImages(urls);
+				});
+		}
+
 
 	t.registerTool("search_history", {
 		{"type", "function"},

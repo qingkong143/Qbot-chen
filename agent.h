@@ -81,7 +81,7 @@ private:
 	static void printSep(char ch = '-');
 	static void initDisplay();
 	static std::string utf8SafeSubstr(const std::string& str, int maxLen);
-	json summarizeModel(const std::string& prompt);
+	json summarizeModel(const std::string& prompt, int maxPromptChars = -1);
 	static size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* output);
 	static int estimateToken(const json& msg);
 	static int estimateTokens(const json& msgs);

@@ -235,8 +235,9 @@ void agent::injectHistoryCompressed(const std::string& historyText) {
 	// 阈值 = 主模型上下文 × 0.5%（1M→5000字符, 128K→640字符）
 	const int threshold = int(Config::get().main_model().context_window * 0.005);
 
-	// 同时受限于摘要模型的输入容量：历史太长连压缩都无法做，先截断
-	const int summaryCap = int(Config::get().summary_model().context_window * 0.08);
+	// 摘要模型输入上限：取 50% 上下文窗口，足够覆盖绝大多数对话历史
+	// 真正送入摘要模型时还会被 summarizeModel 内部二次截断（含截断标记）
+	const int summaryCap = int(Config::get().summary_model().context_window * 0.5);
 
 	if ((int)historyText.size() <= threshold) {
 		std::cout << "[历史恢复] " << historyText.size() << " 字符（阈值 " << threshold
@@ -257,7 +258,7 @@ void agent::injectHistoryCompressed(const std::string& historyText) {
 		"请将以下 QQ 聊天记录压缩为简洁摘要，保留：谁说了什么关键话、做了什么操作、"
 		"未完成的任务。丢弃日常寒暄和无信息量的内容。\n\n" + source;
 
-	json result = summarizeModel(prompt);
+	json result = summarizeModel(prompt, summaryCap);
 	std::string compressed;
 	if (!result.is_null() && result.contains("content") && result["content"].is_string()) {
 		compressed = result["content"].get<std::string>();
@@ -669,9 +670,11 @@ size_t agent::WriteCallback(void* contents, size_t size, size_t nmemb, std::stri
 }
 
 //调用上下文概括模型
-json agent::summarizeModel(const std::string& prompt) {
-	// 输入上限基于摘要模型的 context_window（上下文 9.6%）
-	const int MAX_PROMPT_CHARS = int(Config::get().summary_model().context_window * 0.096);
+json agent::summarizeModel(const std::string& prompt, int maxPromptChars) {
+	// 默认上限基于摘要模型的 context_window（12.5%，128K 模型约 16000 字符）
+	// 历史恢复路径通过 maxPromptChars 传入更大的上限（如 64000），避免被默认值二次截断
+	const int DEFAULT_CAP = int(Config::get().summary_model().context_window * 0.125);
+	const int cap = maxPromptChars > 0 ? maxPromptChars : DEFAULT_CAP;
 
 	CURL* summaryCurl = curl_easy_init();
 	if (!summaryCurl) {
@@ -681,10 +684,10 @@ json agent::summarizeModel(const std::string& prompt) {
 	std::string responseBody;
 
 	std::string safe_prompt = prompt;
-	if ((int)safe_prompt.size() > MAX_PROMPT_CHARS) {
+	if ((int)safe_prompt.size() > cap) {
 		std::cout << CLR_YELLOW "│ ⚠ prompt 超长(" << safe_prompt.size()
-			<< ")，截断至 " << MAX_PROMPT_CHARS << CLR_RESET << std::endl;
-		safe_prompt = utf8SafeSubstr(safe_prompt, MAX_PROMPT_CHARS - 30) + "\n...[内容过长，已截断]";
+			<< ")，截断至 " << cap << CLR_RESET << std::endl;
+		safe_prompt = utf8SafeSubstr(safe_prompt, cap - 30) + "\n...[内容过长，已截断]";
 	}
 
 	json messages = json::array();

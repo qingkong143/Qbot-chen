@@ -1,6 +1,10 @@
 ﻿#pragma once
 
-#include"base.h"
+#include <vector>
+#include <iostream>
+#include <sstream>
+#include <cmath>
+#include <algorithm>
 #include <stdexcept>
 
 template<typename T = double>

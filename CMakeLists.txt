@@ -10,19 +10,38 @@ find_package(nlohmann_json REQUIRED)
 find_package(Threads REQUIRED)
 find_package(SQLite3 REQUIRED)
 
-# ixwebsocket 需要 Threads 模块先加载
-# apt install libixwebsocket-dev 或从源码编译
+# ixwebsocket：优先 CMake 模块，回退 pkg-config
 find_package(ixwebsocket QUIET)
 if(NOT ixwebsocket_FOUND)
-    # 尝试 pkg-config
     find_package(PkgConfig QUIET)
     if(PkgConfig_FOUND)
-        pkg_check_modules(IXWEBSOCKET ixwebsocket)
+        pkg_check_modules(IXWEBSOCKET IMPORTED_TARGET ixwebsocket)
+        if(IXWEBSOCKET_FOUND)
+            set(ixwebsocket_FOUND TRUE)
+        endif()
     endif()
 endif()
 
-# ── 可执行文件 ─────────────────────────────
-add_executable(dicksuck
+# ── 共享链接依赖（INTERFACE 库，同时供主程序和测试链接） ──
+add_library(dicksuck_deps INTERFACE)
+target_link_libraries(dicksuck_deps INTERFACE
+    CURL::libcurl
+    nlohmann_json::nlohmann_json
+    Threads::Threads
+    SQLite::SQLite3
+)
+if(ixwebsocket_FOUND)
+    target_link_libraries(dicksuck_deps INTERFACE ixwebsocket::ixwebsocket)
+else()
+    message(WARNING "ixwebsocket not found via CMake/pkg-config. "
+        "请手动指定: -DIXWEBSOCKET_INCLUDE_DIR=... -DIXWEBSOCKET_LIB=...")
+    # 取消下面注释并填写实际路径：
+    # target_include_directories(dicksuck PRIVATE /usr/local/include)
+    # target_link_libraries(dicksuck PRIVATE /usr/local/lib/libixwebsocket.a)
+endif()
+
+# ── 共享代码（OBJECT 库，同时供主程序和测试链接） ──
+add_library(dicksuck_obj OBJECT
     agent.cpp
     jargon_miner.cpp
     cleanup_manager.cpp
@@ -41,7 +60,6 @@ add_executable(dicksuck
     knowledge_sharing.cpp
     logger.cpp
     long_memory.cpp
-    main.cpp
     memory.cpp
     memory_manager.cpp
     message_deduplicator.cpp
@@ -55,7 +73,6 @@ add_executable(dicksuck
     style_cache.cpp
     style_learner.cpp
     vocabulary_manager.cpp
-    test_cases.cpp
     tools.cpp
 
     # P0/P1/P2 框架
@@ -71,27 +88,27 @@ add_executable(dicksuck
     main_system.cpp
 )
 
-# ── 链接 ──────────────────────────────────
-target_link_libraries(dicksuck PRIVATE
-    CURL::libcurl
-    nlohmann_json::nlohmann_json
+target_include_directories(dicksuck_obj PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(dicksuck_obj PUBLIC dicksuck_deps)
+
+# ── 生产可执行文件 ─────────────────────────
+add_executable(dicksuck
+    $<TARGET_OBJECTS:dicksuck_obj>
+    main.cpp
 )
+target_link_libraries(dicksuck PRIVATE dicksuck_deps)
 
-if(ixwebsocket_FOUND)
-    target_link_libraries(dicksuck PRIVATE ixwebsocket::ixwebsocket)
-elseif(IXWEBSOCKET_FOUND)
-    target_link_libraries(dicksuck PRIVATE ${IXWEBSOCKET_LIBRARIES})
-    target_include_directories(dicksuck PRIVATE ${IXWEBSOCKET_INCLUDE_DIRS})
-else()
-    message(WARNING "ixwebsocket not found via CMake/pkg-config. "
-        "请手动指定: -DIXWEBSOCKET_INCLUDE_DIR=... -DIXWEBSOCKET_LIB=...\n"
-        "替换下面的 target_include_directories 和 target_link_libraries")
-    # 取消下面注释并填写实际路径：
-    # target_include_directories(dicksuck PRIVATE /usr/local/include)
-    # target_link_libraries(dicksuck PRIVATE /usr/local/lib/libixwebsocket.a)
-endif()
-
-target_link_libraries(dicksuck PRIVATE Threads::Threads SQLite::SQLite3)
+# ── 测试 ──────────────────────────────────
+enable_testing()
+add_executable(dicksuck_test
+    $<TARGET_OBJECTS:dicksuck_obj>
+    test_cases.cpp
+)
+target_link_libraries(dicksuck_test PRIVATE dicksuck_deps)
+add_test(NAME dicksuck_unit_tests COMMAND dicksuck_test)
 
 # ── 编译选项 ──────────────────────────────
-target_compile_options(dicksuck PRIVATE -Wall -Wextra -O2)
+target_compile_options(dicksuck_obj PRIVATE
+    $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra -O2>
+    $<$<CXX_COMPILER_ID:MSVC>:/W4 /O2 /utf-8>
+)

@@ -229,7 +229,7 @@ static bool create_template(const std::string& path) {
 void Config::load(const std::string& path) {
     _lastPath = path;
 
-    // ── 首次运行：创建模板 ──
+    // ── 首次运行：创建模板并退出 ──
     if (!std::ifstream(path).good()) {
         std::cout << CLR_YELLOW "[!] 未找到 " << path << "，首次运行需要配置文件" CLR_RESET << std::endl;
         if (create_template(path)) {
