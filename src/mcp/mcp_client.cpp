@@ -13,6 +13,25 @@ static size_t McpWriteCallback(void* contents, size_t size, size_t nmemb, std::s
     return totalSize;
 }
 
+// ── curl header callback：提取 mcp-session-id ────────────────────
+static size_t McpHeaderCallback(char* buffer, size_t size, size_t nitems, std::string* sessionHeader) {
+    size_t totalSize = size * nitems;
+    std::string line(buffer, totalSize);
+
+    // 匹配 mcp-session-id: <value>
+    const std::string key = "mcp-session-id:";
+    auto pos = line.find(key);
+    if (pos != std::string::npos) {
+        pos += key.size();
+        while (pos < line.size() && (line[pos] == ' ' || line[pos] == '\t')) ++pos;
+        size_t end = line.size();
+        // 去掉末尾 \r\n
+        while (end > pos && (line[end-1] == '\r' || line[end-1] == '\n')) --end;
+        *sessionHeader = line.substr(pos, end - pos);
+    }
+    return totalSize;
+}
+
 // ── 构造 ──────────────────────────────────────────────────────────
 McpClient::McpClient(McpServerConfig cfg) : _cfg(std::move(cfg)) {}
 
@@ -47,12 +66,22 @@ std::string McpClient::httpPost(const std::string& /*path*/, const json& body) {
         headers = curl_slist_append(headers, ("Authorization: Bearer " + _cfg.api_key).c_str());
     }
 
+    // 已有 session-id 后，后续请求必须携带
+    if (!_sessionId.empty()) {
+        headers = curl_slist_append(headers, ("mcp-session-id: " + _sessionId).c_str());
+    }
+
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, bodyStr.c_str());
     curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, bodyStr.size());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, McpWriteCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBody);
+
+    // 提取 response headers 中的 mcp-session-id
+    curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, McpHeaderCallback);
+    curl_easy_setopt(curl, CURLOPT_HEADERDATA, &_sessionId);
+
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 60L);
 
     CURLcode res = curl_easy_perform(curl);

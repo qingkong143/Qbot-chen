@@ -55,8 +55,12 @@ private:
     // HTTP POST（streamable HTTP transport）
     std::string httpPost(const std::string& path, const json& body);
 
+    // 从 response headers 提取 mcp-session-id
+    static size_t McpHeaderCallback(char* buffer, size_t size, size_t nitems, std::string* sessionHeader);
+
     McpServerConfig _cfg;
     int _requestId = 1;
     mutable std::mutex _mutex;
     bool _initialized = false;
+    std::string _sessionId; // mcp-session-id from initialize response
 };
