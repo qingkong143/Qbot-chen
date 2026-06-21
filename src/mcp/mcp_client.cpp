@@ -14,7 +14,8 @@ static size_t McpWriteCallback(void* contents, size_t size, size_t nmemb, std::s
 }
 
 // ── curl header callback：提取 mcp-session-id ────────────────────
-static size_t McpHeaderCallback(char* buffer, size_t size, size_t nitems, std::string* sessionHeader) {
+static size_t McpHeaderCallback(char* buffer, size_t size, size_t nitems, void* userData) {
+    std::string* sessionHeader = static_cast<std::string*>(userData);
     size_t totalSize = size * nitems;
     std::string line(buffer, totalSize);
 
@@ -25,7 +26,6 @@ static size_t McpHeaderCallback(char* buffer, size_t size, size_t nitems, std::s
         pos += key.size();
         while (pos < line.size() && (line[pos] == ' ' || line[pos] == '\t')) ++pos;
         size_t end = line.size();
-        // 去掉末尾 \r\n
         while (end > pos && (line[end-1] == '\r' || line[end-1] == '\n')) --end;
         *sessionHeader = line.substr(pos, end - pos);
     }
