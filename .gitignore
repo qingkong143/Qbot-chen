@@ -18,6 +18,8 @@ obj/
 # IDE 缓存
 .vscode/
 .idea/
+.vs/
+out/
 *.vsidx
 *.sln
 *.vcxproj
@@ -34,5 +36,6 @@ Thumbs.db
 
 # 环境配置、密钥
 .env
+CMakeSettings.json
 config.json
 secret.key
