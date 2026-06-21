@@ -1,9 +1,9 @@
 #include "test_framework.h"
-#include "long_memory.h"
-#include "style_learner.h"
-#include "query_cache.h"
-#include "embedding_store.h"
-#include "napcat_bot.h"
+#include "memory/long_memory.h"
+#include "memory/style_learner.h"
+#include "knowledge/query_cache.h"
+#include "knowledge/embedding_store.h"
+#include "bot/napcat_bot.h"
 #include <filesystem>
 #include <string>
 
