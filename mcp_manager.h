@@ -10,6 +10,9 @@
 
 using json = nlohmann::json;
 
+// 前置声明，避免循环 include
+class Tools;
+
 // MCP 管理器：读取配置、连接所有 server、注册工具到 Tools
 class McpManager {
 public:
