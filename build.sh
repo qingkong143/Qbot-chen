@@ -23,7 +23,7 @@ REQUIRED_APT_PACKAGES=(
 
 MISSING=()
 for pkg in "${REQUIRED_APT_PACKAGES[@]}"; do
-    if ! dpkg -l | grep -q "^ii  $pkg"; then
+    if ! dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "install ok installed"; then
         echo "❌ 缺失: $pkg"
         MISSING+=("$pkg")
     else

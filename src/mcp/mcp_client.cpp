@@ -23,6 +23,7 @@ std::string McpClient::httpPost(const std::string& /*path*/, const json& body) {
     // streamable_http: 直接 POST 到 URL
     std::string url = _cfg.url;
     std::string bodyStr = body.dump();
+    std::cout << CLR_CYAN "[MCP] POST " << url << " body=" << bodyStr.substr(0, 200) << CLR_RESET << std::endl;
 
     CURL* curl = curl_easy_init();
     if (!curl) {
@@ -63,10 +64,10 @@ std::string McpClient::httpPost(const std::string& /*path*/, const json& body) {
             << ": " << curl_easy_strerror(res) << CLR_RESET << std::endl;
         return "";
     }
+    long http_code = 0;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+    std::cout << CLR_CYAN "[MCP] HTTP " << http_code << " body=" << responseBody.substr(0, 500) << CLR_RESET << std::endl;
     return responseBody;
-}
-
-// ── JSON-RPC 请求 ─────────────────────────────────────────────────
 json McpClient::sendRequest(const std::string& method, const json& params) {
     std::lock_guard<std::mutex> lock(_mutex);
 
@@ -139,6 +140,7 @@ bool McpClient::initialize() {
 // ── 列出工具 ──────────────────────────────────────────────────────
 std::vector<McpTool> McpClient::listTools() {
     json resp = sendRequest("tools/list", json::object());
+    std::cout << CLR_CYAN "[MCP] tools/list raw resp: " << resp.dump(2).substr(0, 500) << CLR_RESET << std::endl;
     if (resp.is_null() || !resp.contains("result") || !resp["result"].contains("tools")) {
         return {};
     }
