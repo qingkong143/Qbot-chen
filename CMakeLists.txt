@@ -3,8 +3,8 @@ project(qbot_chen LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(IX_WEBSOCKET_BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)  # 不编译测试
-set(IX_WEBSOCKET_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)     # 不编译示例
+set(IX_WEBSOCKET_BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
+set(IX_WEBSOCKET_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 
 # ── 依赖查找 ──────────────────────────────
 find_package(CURL REQUIRED)
@@ -12,7 +12,6 @@ find_package(nlohmann_json REQUIRED)
 find_package(Threads REQUIRED)
 find_package(SQLite3 REQUIRED)
 
-# ixwebsocket：直接 FetchContent，不依赖系统包
 include(FetchContent)
 FetchContent_Declare(
     ixwebsocket
@@ -22,7 +21,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(ixwebsocket)
 
-# ── 共享链接依赖（INTERFACE 库，同时供主程序和测试链接） ──
+# ── 共享链接依赖 ──────────────────────────
 add_library(qbot_chen_deps INTERFACE)
 target_link_libraries(qbot_chen_deps INTERFACE
     CURL::libcurl
@@ -32,57 +31,76 @@ target_link_libraries(qbot_chen_deps INTERFACE
     ixwebsocket::ixwebsocket
 )
 
-# ── 共享代码（OBJECT 库，同时供主程序和测试链接） ──
+# ── 共享代码（OBJECT 库） ──────────────────
 add_library(qbot_chen_obj OBJECT
-    agent.cpp
-    jargon_miner.cpp
-    cleanup_manager.cpp
-    command.cpp
-    config.cpp
-    connection_pool.cpp
-    database_migrator.cpp
-    deepseek.cpp
-    embedding_service.cpp
-    image_ocr_service.cpp
-    embedding_store.cpp
-    event_bus.cpp
-    jargon_data_model.cpp
-    jargon_inference.cpp
-    knowledge_retriever.cpp
-    knowledge_sharing.cpp
-    logger.cpp
-    long_memory.cpp
-    memory.cpp
-    memory_manager.cpp
-    message_deduplicator.cpp
-    models.cpp
-    mcp_client.cpp
-    mcp_manager.cpp
-    napcat_bot.cpp
-    perf_monitor.cpp
-    plugin_loader.cpp
-    query_cache.cpp
-    quality_scorer.cpp
-    reply_optimizer.cpp
-    style_cache.cpp
-    style_learner.cpp
-    vocabulary_manager.cpp
-    tools.cpp
+    # core
+    src/core/config.cpp
+    src/core/tools.cpp
+    src/core/command.cpp
 
-    # P0/P1/P2 框架
-    plugin_base.cpp
-    process_manager.cpp
-    persistence.cpp
-    embedding_plugin.cpp
-    knowledge_base_plugin.cpp
-    command_handler_plugin.cpp
-    long_term_memory_plugin.cpp
-    user_management_plugin.cpp
-    builtin_plugins.cpp
-    main_system.cpp
+    # bot
+    src/bot/agent.cpp
+    src/bot/napcat_bot.cpp
+    src/bot/deepseek.cpp
+    src/bot/models.cpp
+    src/bot/image_ocr_service.cpp
+    src/bot/connection_pool.cpp
+
+    # memory
+    src/memory/long_memory.cpp
+    src/memory/memory.cpp
+    src/memory/memory_manager.cpp
+    src/memory/jargon_miner.cpp
+    src/memory/jargon_data_model.cpp
+    src/memory/jargon_inference.cpp
+    src/memory/vocabulary_manager.cpp
+    src/memory/style_cache.cpp
+    src/memory/style_learner.cpp
+
+    # knowledge
+    src/knowledge/knowledge_retriever.cpp
+    src/knowledge/knowledge_sharing.cpp
+    src/knowledge/quality_scorer.cpp
+    src/knowledge/embedding_service.cpp
+    src/knowledge/embedding_store.cpp
+    src/knowledge/query_cache.cpp
+
+    # plugin
+    src/plugin/plugin_base.cpp
+    src/plugin/plugin_loader.cpp
+    src/plugin/builtin_plugins.cpp
+    src/plugin/process_manager.cpp
+    src/plugin/persistence.cpp
+    src/plugin/embedding_plugin.cpp
+    src/plugin/knowledge_base_plugin.cpp
+    src/plugin/command_handler_plugin.cpp
+    src/plugin/long_term_memory_plugin.cpp
+    src/plugin/user_management_plugin.cpp
+
+    # infra
+    src/infra/logger.cpp
+    src/infra/event_bus.cpp
+    src/infra/database_migrator.cpp
+    src/infra/cleanup_manager.cpp
+    src/infra/message_deduplicator.cpp
+    src/infra/perf_monitor.cpp
+    src/infra/reply_optimizer.cpp
+
+    # mcp
+    src/mcp/mcp_client.cpp
+    src/mcp/mcp_manager.cpp
 )
 
-target_include_directories(qbot_chen_obj PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+# include 路径：src/ 下的各子目录（与 #include "module/file.h" 对应）
+target_include_directories(qbot_chen_obj PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/bot
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/memory
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/knowledge
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/plugin
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/infra
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/mcp
+)
 target_link_libraries(qbot_chen_obj PUBLIC qbot_chen_deps)
 
 # ── 生产可执行文件 ─────────────────────────
