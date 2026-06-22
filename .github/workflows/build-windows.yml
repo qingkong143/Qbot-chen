@@ -23,7 +23,7 @@ jobs:
       shell: pwsh
 
     - name: Install dependencies
-      run: C:\vcpkg\vcpkg install openssl:x64-windows nlohmann-json:x64-windows sqlite3:x64-windows
+      run: C:\vcpkg\vcpkg install openssl:x64-windows curl:x64-windows nlohmann-json:x64-windows sqlite3:x64-windows
       shell: pwsh
 
     - name: Configure CMake
@@ -33,3 +33,9 @@ jobs:
     - name: Build
       run: cmake --build build --config Release
       shell: pwsh
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: qbot-chen-windows
+        path: build/qbot-chen.exe

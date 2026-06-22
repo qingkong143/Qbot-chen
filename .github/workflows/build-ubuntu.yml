@@ -27,3 +27,9 @@ jobs:
 
     - name: Build
       run: sh build.sh
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: qbot-chen-linux
+        path: build/qbot-chen
