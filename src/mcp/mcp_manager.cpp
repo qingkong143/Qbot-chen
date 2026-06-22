@@ -9,8 +9,22 @@
 
 using json = nlohmann::json;
 
+std::string McpManager::sanitizeName(const std::string& name) {
+    std::string result;
+    result.reserve(name.size());
+    for (char c : name) {
+        if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+            (c >= '0' && c <= '9') || c == '_' || c == '-') {
+            result += c;
+        } else {
+            result += '_';
+        }
+    }
+    return result;
+}
+
 std::string McpManager::makeQualifiedName(const std::string& server, const std::string& tool) {
-    return server + ":" + tool;
+    return sanitizeName(server) + "_" + sanitizeName(tool);
 }
 
 void McpManager::setup(Tools& tools) {

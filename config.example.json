@@ -36,7 +36,7 @@
     "ws_url": "ws://127.0.0.1:3001",
     "http_url": "http://127.0.0.1:3000",
     "token": "your-napcat-token",
-    "group_whitelist": [709508212],
+    "group_whitelist": [白名单群号(int)],
     "private_whitelist": [],
     "admin_users": ["your-qq-number"],
     "bot_aliases": ["机器人", "bot"],
@@ -53,7 +53,7 @@
       "enabled": true
     }
   ],
-  "system_prompt": "你在 QQ 群里和大家日常聊天。说话自然一点，像普通人，不要像客服或写作文。普通回复尽量短，能一句话说清就一句话。",
+  "system_prompt": "自定义系统提示词",
   "pipeline": {
     "silentChance": 1.0,
     "unmentionedEvalChance": 1.0,

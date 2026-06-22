@@ -1,4 +1,4 @@
-# QBot — AI 驱动的 QQ 机器人
+# QBot — 由 生成式大模型 驱动的 QQ 机器人
 
 [![OneBot](https://img.shields.io/badge/OneBot-Compatible-blue?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NDggNDQ4Ij48cGF0aCBmaWxsPSIjRkZENTY1IiBkPSJNMjQ2IDBMMCAwczE2MiAzODQgMTg0IDQwNnMxODggMTIgMTg0LTE4NGE1NSA1NSAwIDAgMSAxMDgtNTJ6Ii8+PHBhdGggZmlsbD0iI0ZGQjZCRiIgZD0iTTAgMGwyNDYgMjc4SDB6Ii8+PHBhdGggZmlsbD0iI0ZGQjZCRiIgZD0iTTAgMGwyNDYtMjc4SDB6Ii8+PC9zdmc+)](https://github.com/botuniverse/onebot)
 
@@ -207,6 +207,8 @@ cmake --build . --config Release
 必填字段：`main_model.url/api_key/model`、`summary_model.url/api_key/model`、`napcat.ws_url/http_url/token`。
 
 可选字段（有默认值）：OCR、embedding、mcp_servers、pipeline、a_memorix、ban_words 等。
+
+> 注: 模型可换成其他接口规范相同的渠道
 
 ### 4. 运行
 

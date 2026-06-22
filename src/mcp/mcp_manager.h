@@ -40,5 +40,6 @@ private:
     std::unordered_map<std::string, RegisteredTool> _toolMap;
     mutable std::mutex _mutex;
 
+    static std::string sanitizeName(const std::string& name);
     static std::string makeQualifiedName(const std::string& server, const std::string& tool);
 };
