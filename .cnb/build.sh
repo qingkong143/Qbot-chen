@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eo pipefail
+set -e
 
 echo "============================================="
 echo "🔨 CNB 云端构建"
