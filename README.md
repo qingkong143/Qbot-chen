@@ -1,5 +1,7 @@
 # QBot — AI 驱动的 QQ 机器人
 
+[![OneBot](https://img.shields.io/badge/OneBot-Compatible-blue?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NDggNDQ4Ij48cGF0aCBmaWxsPSIjRkZENTY1IiBkPSJNMjQ2IDBMMCAwczE2MiAzODQgMTg0IDQwNnMxODggMTIgMTg0LTE4NGE1NSA1NSAwIDAgMSAxMDgtNTJ6Ii8+PHBhdGggZmlsbD0iI0ZGQjZCRiIgZD0iTTAgMGwyNDYgMjc4SDB6Ii8+PHBhdGggZmlsbD0iI0ZGQjZCRiIgZD0iTTAgMGwyNDYtMjc4SDB6Ii8+PC9zdmc+)](https://github.com/onebot)
+
 > 参考框架：[MaiBot](https://github.com/mai-bot/MaiBot)（架构设计）、[cpp-mmp](https://github.com/username/cpp-mmp)（MCP SSE 客户端实现）
 >
 > QQ 协议对接：[NapCat](https://github.com/NapNeko/NapCat)（OneBot WebSocket 协议）
