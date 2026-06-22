@@ -110,14 +110,14 @@ add_library(qbot_chen_obj OBJECT
     src/infra/perf_monitor.cpp
     src/infra/reply_optimizer.cpp
 
-    # mcp (cpp-mmp 原版，头文件和源文件都在 src/mcp/ 下)
+    # mcp (cpp-mcp 原版，头文件和源文件都在 src/mcp/ 下)
     src/mcp/mcp_sse_client.cpp
     src/mcp/mcp_tool.cpp
     src/mcp/mcp_message.cpp
     src/mcp/mcp_manager.cpp
 )
 
-# include 路径：项目根目录即可，cpp-mmp 头文件已在 src/mcp/ 下
+# include 路径：项目根目录即可，cpp-mcp 头文件已在 src/mcp/ 下
 target_include_directories(qbot_chen_obj PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )

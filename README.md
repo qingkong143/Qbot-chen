@@ -1,10 +1,10 @@
 # QBot — AI 驱动的 QQ 机器人
 
-[![OneBot](https://img.shields.io/badge/OneBot-Compatible-blue?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NDggNDQ4Ij48cGF0aCBmaWxsPSIjRkZENTY1IiBkPSJNMjQ2IDBMMCAwczE2MiAzODQgMTg0IDQwNnMxODggMTIgMTg0LTE4NGE1NSA1NSAwIDAgMSAxMDgtNTJ6Ii8+PHBhdGggZmlsbD0iI0ZGQjZCRiIgZD0iTTAgMGwyNDYgMjc4SDB6Ii8+PHBhdGggZmlsbD0iI0ZGQjZCRiIgZD0iTTAgMGwyNDYtMjc4SDB6Ii8+PC9zdmc+)](https://github.com/onebot)
+[![OneBot](https://img.shields.io/badge/OneBot-Compatible-blue?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NDggNDQ4Ij48cGF0aCBmaWxsPSIjRkZENTY1IiBkPSJNMjQ2IDBMMCAwczE2MiAzODQgMTg0IDQwNnMxODggMTIgMTg0LTE4NGE1NSA1NSAwIDAgMSAxMDgtNTJ6Ii8+PHBhdGggZmlsbD0iI0ZGQjZCRiIgZD0iTTAgMGwyNDYgMjc4SDB6Ii8+PHBhdGggZmlsbD0iI0ZGQjZCRiIgZD0iTTAgMGwyNDYtMjc4SDB6Ii8+PC9zdmc+)](https://github.com/botuniverse/onebot)
 
-> 参考框架：[MaiBot](https://github.com/mai-bot/MaiBot)（架构设计）、[cpp-mmp](https://github.com/username/cpp-mmp)（MCP SSE 客户端实现）
+> 参考框架：[MaiBot](https://github.com/Mai-with-u/MaiBot)（架构设计）、[cpp-mcp](https://github.com/hkr04/cpp-mcp)（MCP SSE 客户端实现）
 >
-> QQ 协议对接：[NapCat](https://github.com/NapNeko/NapCat)（OneBot WebSocket 协议）
+> QQ 协议对接：[NapCat](https://github.com/NapNeko/NapCatQQ)（OneBot WebSocket 协议）
 
 基于 NapCat（OneBot 协议）和 DeepSeek 大模型构建的智能 QQ 机器人。支持群聊/私聊、长期记忆、语义检索、图片 OCR、行话挖掘、MCP 远程工具扩展等能力。
 
@@ -109,8 +109,8 @@
 | **ConnectionPool** | `src/bot/connection_pool.cpp/.h` | curl 连接池 |
 | **Config** | `src/core/config.cpp/.h` | 配置加载 & 必填校验 |
 | **Command** | `src/core/command.cpp/.h` | 命令处理 |
-| **MCP Manager** | `src/mcp/mcp_manager.cpp/.h` | MCP 远程工具管理器（基于 cpp-mmp 的 SSE 客户端） |
-| **cpp-mmp** | `src/mcp/mcp_sse_client.cpp/.h` 等 | MCP 协议 SSE 传输层（httplib + OpenSSL） |
+| **MCP Manager** | `src/mcp/mcp_manager.cpp/.h` | MCP 远程工具管理器（基于 cpp-mcp 的 SSE 客户端） |
+| **cpp-mcp** | `src/mcp/mcp_sse_client.cpp/.h` 等 | MCP 协议 SSE 传输层（httplib + OpenSSL） |
 | **EmbeddingService** | `src/knowledge/embedding_service.cpp/.h` | 向量 API 客户端（缓存 + 并发 + 重试） |
 | **EmbeddingStore** | `src/knowledge/embedding_store.cpp/.h` | 向量持久化（SQLite per-namespace + 旧 JSON 迁移） |
 | **KnowledgeRetriever** | `src/knowledge/knowledge_retriever.cpp/.h` | 知识库 CRUD |
@@ -276,7 +276,7 @@ qbot-chen/
 │   │   ├── math.h                # 数学工具
 │   │   └── platform.h            # 平台抽象
 │   │
-│   ├── mcp/                  # MCP 远程工具扩展（基于 cpp-mmp）
+│   ├── mcp/                  # MCP 远程工具扩展（基于 cpp-mcp）
 │   │   ├── mcp_manager.cpp/.h    # MCP 工具管理器（URL 解析 + 工具注册）
 │   │   ├── mcp_sse_client.cpp/.h # SSE 客户端（httplib 回调式 SSE）
 │   │   ├── mcp_message.cpp/.h    # JSON-RPC 2.0 消息定义
@@ -351,7 +351,7 @@ src/bot/agent ──→ src/knowledge/embedding_service ──→ src/knowledge/
 src/bot/agent ──→ src/memory/long_memory（SQLite）
 src/bot/agent ──→ src/memory/style_cache
 src/bot/agent ──→ src/knowledge/query_cache
-src/bot/agent ──→ src/mcp/mcp_manager ──→ src/mcp/mcp_sse_client（cpp-mmp）
+src/bot/agent ──→ src/mcp/mcp_manager ──→ src/mcp/mcp_sse_client（cpp-mcp）
 
 src/bot/napcat_bot ──→ src/bot/image_ocr_service（libcurl）
 src/bot/napcat_bot ──→ src/bot/connection_pool（libcurl）
